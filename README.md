@@ -8,14 +8,13 @@ Authentication is done using Azure AD. Please follow [this document](https://doc
 
 ## Configuration
 The tool requires following environment variables.
-
 ```
 CLUSTER_QUERY_URL=https://<ADX_CLUSTER>.<REGION>.kusto.windows.net
 CLIENT_ID=<AAD_CLIENT_ID>
 CLIENT_SECRET=<AAD_SECRET>
 TENANT_ID=<AAD_TENANT>
 DATABASE_NAME=adx_db
-QUERY_SCRIPT_URL=https://.../kusto_query.py
+QUERY_SCRIPT_URL=https://.../adx_query.py
 TEST_ID=my_stressful_test
 QUERIES_TOTAL=100
 ```
@@ -24,13 +23,29 @@ QUERIES_TOTAL=100
 - If `QUERIES_TOTAL` is not provided, the tool will run indefinitely.
 
 ## Run Test
+### Single Instance
 Create a `.env` file with above configuration, then run;
-
 ```
 docker run -it --rm --env-file .env syedhassaanahmed/azure-kusto-load-test
 ```
 
-## Test report
+### Concurrent
+Generating concurrent load requires a Kubernetes cluster. Follow [this guideline](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough) to create an AKS cluster in Azure. Given a k8s cluster is up and running, modify above environment variables in `deployment.yaml` file and run the following;
+```
+kubectl create -f deployment.yaml
+```
+
+Once deployment is successful, the logs can be viewed by;
+```
+kubectl logs -l app=adx-load-test
+```
+
+To stop the load tests;
+```
+kubectl delete deployment adx-load-test
+```
+
+## Query Performance
 Here is how to visualize the duration of all completed queries performed during Test `my_stressful_test`.
 
 ```sql

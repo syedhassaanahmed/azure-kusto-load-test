@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adx-load-test
+  labels:
+    app: adx-load-test
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: adx-load-test
+  template:
+    metadata:
+      labels:
+        app: adx-load-test
+    spec:
+      containers:
+      - name: adx-load-test
+        image: syedhassaanahmed/azure-kusto-load-test
+        resources:
+          limits:
+            memory: "100Mi"
+          requests:
+            memory: "100Mi"
+        env:
+        - name: CLUSTER_QUERY_URL
+          value: "https://<ADX_CLUSTER>.<REGION>.kusto.windows.net"
+        - name: CLIENT_ID
+          value: "<AAD_CLIENT_ID>"
+        - name: CLIENT_SECRET
+          value: "<AAD_SECRET>"
+        - name: TENANT_ID
+          value: "<AAD_TENANT>"
+        - name: DATABASE_NAME
+          value: "adx_db"
+        - name: TEST_ID
+          value: "my_stressful_test"
+        - name: QUERY_SCRIPT_URL
+          value: "https://.../adx_query.py"
