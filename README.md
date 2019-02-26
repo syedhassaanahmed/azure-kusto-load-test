@@ -1,11 +1,13 @@
 # azure-kusto-load-test
-This tool enables containerized load testing of Azure Data Explorer (ADX). The ADX query that needs to be executed, must be exposed as an online Python script (`QUERY_SCRIPT_URL`). The script should contain a function `get_query()` returning the query. [Here](https://gist.githubusercontent.com/syedhassaanahmed/0635ac90721ac714d7d8bc5fe2fb0913/raw/979e022f4fcc74ce27a6ee27e884ac259dd56309/kusto_query.py) is an example script.
+[![Docker Build Status](https://img.shields.io/docker/build/syedhassaanahmed/azure-kusto-load-test.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/azure-kusto-load-test/builds/) [![MicroBadger Size](https://img.shields.io/microbadger/image-size/syedhassaanahmed/azure-kusto-load-test.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/azure-kusto-load-test/tags/) [![Docker Pulls](https://img.shields.io/docker/pulls/syedhassaanahmed/azure-kusto-load-test.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/azure-kusto-load-test/)
+
+This tool enables containerized load testing of Azure Data Explorer (ADX). The ADX query that needs to be executed, must be exposed as an online Python script (`QUERY_SCRIPT_URL`). The script should contain a function `get_query()` returning the ADX query. [Here](https://gist.githubusercontent.com/syedhassaanahmed/0635ac90721ac714d7d8bc5fe2fb0913/raw/979e022f4fcc74ce27a6ee27e884ac259dd56309/kusto_query.py) is an example script.
 
 ## Authentication
 Authentication is done using Azure AD. Please follow [this document](https://docs.microsoft.com/en-us/azure/kusto/management/access-control/how-to-provision-aad-app#application-authentication-use-cases) on how to provision an AAD application and assign it relevant permissions on the ADX cluster.
 
 ## Configuration
-The tool requires following environment variables. If `TEST_ID` is missing, a guid will be generated.
+The tool requires following environment variables.
 
 ```
 CLUSTER_QUERY_URL=https://<ADX_CLUSTER>.<REGION>.kusto.windows.net
@@ -15,6 +17,17 @@ TENANT_ID=<AAD_TENANT>
 DATABASE_NAME=adx_db
 QUERY_SCRIPT_URL=https://.../kusto_query.py
 TEST_ID=my_stressful_test
+QUERIES_TOTAL=100
+```
+
+- If `TEST_ID` is not provided, a guid will be generated.
+- If `QUERIES_TOTAL` is not provided, the tool will run indefinitely.
+
+## Run Test
+Create a `.env` file with above configuration, then run;
+
+```
+docker run -it --rm --env-file .env syedhassaanahmed/azure-kusto-load-test
 ```
 
 ## Test report
