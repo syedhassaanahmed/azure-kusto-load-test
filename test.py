@@ -37,10 +37,10 @@ def execute_query(raw_query):
 queries_total = int(os.environ.get("QUERIES_TOTAL", -1))
 queries_executed = 0
 while queries_executed < queries_total or queries_total < 0:
-    query = get_query()
-    print("Test '{}' executed:\n{}\n\n".format(test_id, query))
+    raw_query = get_query()
+    print("Test '{}' executed:\n{}\n\n".format(test_id, raw_query))
 
-    execute_query()
+    execute_query(raw_query)
     queries_executed += 1
 
 print("Test run for '{}' ended.".format(test_id))
