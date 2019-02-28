@@ -24,10 +24,11 @@ client = KustoClient(kcsb)
 
 db_name = os.environ.get("DATABASE_NAME")
 test_id = os.environ.get("TEST_ID", str(uuid.uuid4()))
-print("TEST_ID=" + test_id)
 
-def execute_query():
-    query = "{0} //TEST_ID={1}".format(get_query(), test_id)
+print("Test run for '{}' started.".format(test_id))
+
+def execute_query(raw_query):
+    query = "{} //TEST_ID={}".format(raw_query, test_id)
     response = client.execute(db_name, query)
     if response.errors_count > 0:
         raise Exception(response)
@@ -35,6 +36,11 @@ def execute_query():
 # Total number of queries to run or -1 to run forever
 queries_total = int(os.environ.get("QUERIES_TOTAL", -1))
 queries_executed = 0
-while queries_executed < queries_total or queries_total < 0:    
-    execute_query()
+while queries_executed < queries_total or queries_total < 0:
+    raw_query = get_query()
+    print("Test '{}' executed:\n{}\n\n".format(test_id, raw_query))
+
+    execute_query(raw_query)
     queries_executed += 1
+
+print("Test run for '{}' ended.".format(test_id))
