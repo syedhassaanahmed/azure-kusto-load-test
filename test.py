@@ -24,7 +24,6 @@ client = KustoClient(kcsb)
 
 db_name = os.environ.get("DATABASE_NAME")
 test_id = os.environ.get("TEST_ID", str(uuid.uuid4()))
-print("TEST_ID=" + test_id)
 
 def execute_query():
     query = "{0} //TEST_ID={1}".format(get_query(), test_id)
@@ -36,5 +35,6 @@ def execute_query():
 queries_total = int(os.environ.get("QUERIES_TOTAL", -1))
 queries_executed = 0
 while queries_executed < queries_total or queries_total < 0:    
+    print("TEST_ID=" + test_id)
     execute_query()
     queries_executed += 1
