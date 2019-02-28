@@ -51,7 +51,7 @@ kubectl delete deployment adx-load-test
 ```
 
 ## Query Performance
-Here is how to visualize the duration of all completed queries performed during a test run `my_stressful_test`.
+Here is how to visualize the duration of all completed queries performed during a test run of `my_stressful_test`.
 
 ```sql
 .show queries 
@@ -60,5 +60,15 @@ Here is how to visualize the duration of all completed queries performed during 
     and Text endswith "TEST_ID=my_stressful_test"
 | extend Duration_sec = Duration / time(1s)
 | summarize percentile(Duration_sec, 99) by bin(StartedOn, 10s) 
+| render timechart 
+```
+
+Here is how to visualize the number of issued queries during a test run of `my_stressful_test`.
+
+```sql
+.show queries 
+| where Database == "<DATABASE_NAME>" 
+    and Text endswith "TEST_ID=my_stressful_test"
+| summarize TotalQueries_sec=count() by bin(StartedOn, 1s)  
 | render timechart 
 ```
