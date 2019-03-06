@@ -14,7 +14,7 @@ CLIENT_ID=<AAD_CLIENT_ID>
 CLIENT_SECRET=<AAD_SECRET>
 TENANT_ID=<AAD_TENANT>
 DATABASE_NAME=adx_db
-QUERY_SCRIPT_URL=https://.../adx_query.py
+QUERY_SCRIPT_URL=https://.../query.py
 TEST_ID=my_stressful_test
 QUERIES_TOTAL=100
 ```
