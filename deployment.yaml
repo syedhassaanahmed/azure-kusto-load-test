@@ -36,4 +36,4 @@ spec:
         - name: TEST_ID
           value: "my_stressful_test"
         - name: QUERY_SCRIPT_URL
-          value: "https://.../adx_query.py"
+          value: "https://.../query.py"
