@@ -1,13 +1,14 @@
 # azure-kusto-load-test
 [![Docker Build Status](https://img.shields.io/docker/cloud/build/syedhassaanahmed/azure-kusto-load-test.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/azure-kusto-load-test/builds/) [![MicroBadger Size](https://img.shields.io/microbadger/image-size/syedhassaanahmed/azure-kusto-load-test.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/azure-kusto-load-test/tags/) [![Docker Pulls](https://img.shields.io/docker/pulls/syedhassaanahmed/azure-kusto-load-test.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/azure-kusto-load-test/)
 
-This tool enables containerized load testing of Azure Data Explorer (ADX) by executing [KQL](https://docs.microsoft.com/en-us/azure/kusto/query/) queries. Queries are kept outside of this tool and are exposed as an online Python script (configured by `QUERY_SCRIPT_URL`). The script should contain a function `get_query()` which returns the KQL query. Having a function allows us to randomize aspects of the query. [Here](https://gist.githubusercontent.com/syedhassaanahmed/0635ac90721ac714d7d8bc5fe2fb0913/raw/979e022f4fcc74ce27a6ee27e884ac259dd56309/kusto_query.py) is an example Python script.
+This tool enables containerized load testing of Azure Data Explorer (ADX) clusters by executing [KQL](https://docs.microsoft.com/en-us/azure/kusto/query/) queries from Docker containers. The KQL query is kept outside and is exposed to the tool as an online Python script (configured by `QUERY_SCRIPT_URL`). The script must contain a function `get_query()` which returns the KQL query. Having a function allows us to randomize aspects of the query. [Here](https://gist.githubusercontent.com/syedhassaanahmed/0635ac90721ac714d7d8bc5fe2fb0913/raw/979e022f4fcc74ce27a6ee27e884ac259dd56309/kusto_query.py) is an example Python script.
+
+For reporting query performance, ADX's built-in management command [.show queries](https://docs.microsoft.com/en-us/azure/kusto/management/queries) can be used. In order to measure E2E query latency, an optional [Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview) instrumentation can also be provided via `APPINSIGHTS_INSTRUMENTATIONKEY`.
 
 ## Authentication
 The tool requires Azure AD for Authentication. Please follow [this document](https://docs.microsoft.com/en-us/azure/kusto/management/access-control/how-to-provision-aad-app#application-authentication-use-cases) on how to provision an AAD application and assign it relevant permissions on the ADX cluster.
 
 ## Configuration
-Following environment variables are required.
 ```
 CLUSTER_QUERY_URL=https://<ADX_CLUSTER>.<REGION>.kusto.windows.net
 CLIENT_ID=<AAD_CLIENT_ID>
@@ -16,11 +17,13 @@ TENANT_ID=<AAD_TENANT>
 DATABASE_NAME=adx_db
 QUERY_SCRIPT_URL=https://.../query.py
 TEST_ID=my_stressful_test
+APPINSIGHTS_INSTRUMENTATIONKEY=<APPINSIGHTS_INSTRUMENTATIONKEY>
 QUERIES_TOTAL=100
 ```
 
 - If `TEST_ID` is not provided, a guid will be generated.
-- If `QUERIES_TOTAL` is not provided, the tool will run indefinitely.
+- Application Insights instrumentation will be ignored if `APPINSIGHTS_INSTRUMENTATIONKEY` is not provided.
+- The tool will run indefinitely if `QUERIES_TOTAL` is not provided.
 
 ## Run Test
 ### Single Instance
@@ -51,24 +54,45 @@ kubectl delete deployment adx-load-test
 ```
 
 ## Query Performance
-Here is how to visualize the duration of all completed queries performed during a test run of `my_stressful_test`.
+For a given test run `my_stressful_test`;
 
+### Application Insights
+- E2E duration of all completed queries.
+```sql
+customMetrics
+| where name == "query_time"
+    and customDimensions.test_id == "my_stressful_test"
+| summarize percentiles(value, 50, 90) by bin(timestamp, 10s)
+| render timechart
+```
+
+### ADX Engine
+- Duration of all completed queries as measured by the ADX query engine.
 ```sql
 .show queries 
 | where Database == "<DATABASE_NAME>" 
     and State == "Completed"
     and Text endswith "TEST_ID=my_stressful_test"
-| extend Duration_sec = Duration / time(1s)
-| summarize percentile(Duration_sec, 99) by bin(StartedOn, 10s) 
-| render timechart 
+| extend Duration = Duration / time(1ms)
+| summarize percentiles(Duration, 50, 90) by bin(StartedOn, 10s)
+| render timechart
 ```
 
-Here is how to visualize the number of issued queries during a test run of `my_stressful_test`.
-
+- Number of queries/second issued during a test run.
 ```sql
 .show queries 
-| where Database == "<DATABASE_NAME>" 
+| where Database == "<DATABASE_NAME>"
     and Text endswith "TEST_ID=my_stressful_test"
-| summarize TotalQueries_sec=count() by bin(StartedOn, 1s)  
-| render timechart 
+| summarize TotalQueriesSec=count() by bin(StartedOn, 1s)  
+| render timechart
+```
+
+- Correlation between query duration and average disk misses
+```sql
+.show queries
+| where Database == "<DATABASE_NAME>"
+    and State == "Completed"
+    and Text endswith "TEST_ID=my_stressful_test"
+| summarize DiskMisses=avg(toint(CacheStatistics.Disk.Misses)), Duration=avg(Duration / 1ms) by bin(StartedOn, 1m)
+| render timechart
 ```

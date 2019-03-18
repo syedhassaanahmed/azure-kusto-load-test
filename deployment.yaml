@@ -35,5 +35,7 @@ spec:
           value: "adx_db"
         - name: TEST_ID
           value: "my_stressful_test"
+        - name: APPINSIGHTS_INSTRUMENTATIONKEY
+          value: "<APPINSIGHTS_INSTRUMENTATIONKEY>"
         - name: QUERY_SCRIPT_URL
           value: "https://.../query.py"
