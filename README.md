@@ -57,7 +57,7 @@ kubectl delete deployment adx-load-test
 For a given test run `my_stressful_test`;
 
 ### Application Insights
-- E2E duration of all completed queries.
+E2E duration of all completed queries.
 ```sql
 customMetrics
 | where name == "query_time"
@@ -67,7 +67,7 @@ customMetrics
 ```
 
 ### ADX Engine
-- Duration of all completed queries as measured by the ADX query engine.
+Duration of all completed queries as measured by the ADX query engine.
 ```sql
 .show queries 
 | where Database == "<DATABASE_NAME>" 
@@ -78,7 +78,7 @@ customMetrics
 | render timechart
 ```
 
-- Number of queries/second issued during a test run.
+Number of queries/second issued during a test run.
 ```sql
 .show queries 
 | where Database == "<DATABASE_NAME>"
@@ -87,7 +87,7 @@ customMetrics
 | render timechart
 ```
 
-- Correlation between query duration and average disk misses
+Correlation between query duration and average disk misses
 ```sql
 .show queries
 | where Database == "<DATABASE_NAME>"
