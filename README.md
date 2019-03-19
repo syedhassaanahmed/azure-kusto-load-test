@@ -62,7 +62,7 @@ E2E duration of all completed queries.
 customMetrics
 | where name == "query_time"
     and customDimensions.test_id == "my_stressful_test"
-| summarize percentiles(value, 50, 90) by bin(timestamp, 10s)
+| summarize percentiles(value, 5, 50, 95) by bin(timestamp, 1m)
 | render timechart
 ```
 
@@ -74,7 +74,7 @@ Duration of all completed queries as measured by the ADX query engine.
     and State == "Completed"
     and Text endswith "TEST_ID=my_stressful_test"
 | extend Duration = Duration / time(1ms)
-| summarize percentiles(Duration, 50, 90) by bin(StartedOn, 10s)
+| summarize percentiles(Duration, 5, 50, 95) by bin(StartedOn, 1m)
 | render timechart
 ```
 
