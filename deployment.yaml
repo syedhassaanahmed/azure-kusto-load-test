@@ -17,11 +17,6 @@ spec:
       containers:
       - name: adx-load-test
         image: syedhassaanahmed/azure-kusto-load-test
-        resources:
-          limits:
-            memory: "100Mi"
-          requests:
-            memory: "100Mi"
         env:
         - name: CLUSTER_QUERY_URL
           value: "https://<ADX_CLUSTER>.<REGION>.kusto.windows.net"

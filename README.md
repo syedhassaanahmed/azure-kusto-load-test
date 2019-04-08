@@ -40,7 +40,7 @@ Generating concurrent load requires a Kubernetes (k8s) cluster. Here are some of
 
 Once the k8s cluster is up and running, modify the above environment variables in `deployment.yaml` file and run the following;
 ```
-kubectl create -f deployment.yaml
+kubectl apply -f deployment.yaml
 ```
 
 Logs from a successfully running deployment can be viewed by;
