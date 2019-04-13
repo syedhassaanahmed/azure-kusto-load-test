@@ -60,8 +60,7 @@ For a given test run `my_stressful_test`;
 E2E duration of all completed queries.
 ```sql
 customMetrics
-| where name == "query_time"
-    and customDimensions.test_id == "my_stressful_test"
+| where name == "query_time" and customDimensions.test_id == "my_stressful_test"
 | summarize percentiles(value, 5, 50, 95) by bin(timestamp, 1m)
 | render timechart
 ```
@@ -73,7 +72,7 @@ Duration of all completed queries as measured by the ADX query engine.
 | where Database == "<DATABASE_NAME>" 
     and State == "Completed"
     and Text endswith "TEST_ID=my_stressful_test"
-| extend Duration = Duration / time(1ms)
+| extend Duration = Duration / time(1s)
 | summarize percentiles(Duration, 5, 50, 95) by bin(StartedOn, 1m)
 | render timechart
 ```
@@ -81,18 +80,28 @@ Duration of all completed queries as measured by the ADX query engine.
 Number of queries/second issued during a test run.
 ```sql
 .show queries 
-| where Database == "<DATABASE_NAME>"
-    and Text endswith "TEST_ID=my_stressful_test"
+| where Database == "<DATABASE_NAME>" and Text endswith "TEST_ID=my_stressful_test"
 | summarize TotalQueriesSec=count() by bin(StartedOn, 1s)  
 | render timechart
 ```
 
-Correlation between query duration and average disk misses
+Correlation between average query duration and disk misses
 ```sql
 .show queries
 | where Database == "<DATABASE_NAME>"
     and State == "Completed"
     and Text endswith "TEST_ID=my_stressful_test"
-| summarize DiskMisses=avg(toint(CacheStatistics.Disk.Misses)), Duration=avg(Duration / 1ms) by bin(StartedOn, 1m)
+| summarize DiskMisses = avg(toint(CacheStatistics.Disk.Misses)), 
+    Duration = avg(Duration / 1s) 
+    by bin(StartedOn, 1m)
 | render timechart
+```
+
+Find Test IDs for tests executed in last 7 days
+```sql
+.show queries 
+| where Database == "<DATABASE_NAME>" and StartedOn > ago(7d)
+| parse Text with * "TEST_ID=" TestId
+| where isnotempty(TestId)
+| distinct TestId
 ```
