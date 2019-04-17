@@ -17,11 +17,13 @@ TENANT_ID=<AAD_TENANT>
 DATABASE_NAME=adx_db
 QUERY_SCRIPT_URL=https://.../query.py
 TEST_ID=my_stressful_test
+QUERY_CONSISTENCY=weakconsistency
 APPINSIGHTS_INSTRUMENTATIONKEY=<APPINSIGHTS_INSTRUMENTATIONKEY>
 QUERIES_TOTAL=100
 ```
 
 - If `TEST_ID` is not provided, a guid will be generated.
+- Default `QUERY_CONSISTENCY` value is `weakconsistency`. [This document](https://docs.microsoft.com/en-us/azure/kusto/concepts/queryconsistency) describes Query consistency in detail.
 - Application Insights instrumentation will be ignored if `APPINSIGHTS_INSTRUMENTATIONKEY` is not provided.
 - The tool will run indefinitely if `QUERIES_TOTAL` is not provided.
 

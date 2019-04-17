@@ -1,7 +1,7 @@
 ﻿import os, uuid, timeit, functools
 
 from query import get_query
-from azure.kusto.data.request import KustoClient, KustoConnectionStringBuilder
+from azure.kusto.data.request import KustoClient, KustoConnectionStringBuilder, ClientRequestProperties
 from applicationinsights import TelemetryClient
 
 ######################################################
@@ -23,6 +23,10 @@ kusto_client = KustoClient(kcsb)
 
 db_name = os.environ.get("DATABASE_NAME")
 test_id = os.environ.get("TEST_ID", str(uuid.uuid4()))
+query_consistency = os.environ.get("QUERY_CONSISTENCY", "weakconsistency")
+
+request_properties = ClientRequestProperties()
+request_properties.set_option("queryconsistency", query_consistency)
 
 instrumentation_key = os.environ.get("APPINSIGHTS_INSTRUMENTATIONKEY")
 telemetry_client = None
@@ -33,7 +37,7 @@ print("Test run for '{}' started.".format(test_id))
 
 def execute_query(raw_query):
     query = "{} //TEST_ID={}".format(raw_query, test_id)
-    response = kusto_client.execute(db_name, query)
+    response = kusto_client.execute(db_name, query, request_properties)
 
     if response.errors_count > 0:
         if telemetry_client:
