@@ -1,2 +1,2 @@
-azure-kusto-data[pandas]
+azure-kusto-data
 applicationinsights
